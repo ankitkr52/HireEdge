@@ -1,6 +1,6 @@
-const exprees = require('express');
+const express = require('express');  // Fixed typo
 
-const app = exprees();
-app.use(exprees.json());
+const app = express();
+app.use(express.json());
 
 module.exports = app;
