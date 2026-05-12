@@ -27,7 +27,7 @@ async function registerUserController(req, res) {
         password: hash
     })
     
-    const token = jwt.sign(
+     const token = jwt.sign(
         { id: user._id, username: user.username },
         process.env.jwt_secret,
         { expiresIn: "1d" }
@@ -54,10 +54,31 @@ async function loginUserController(req, res) {
     const {username,password}=req.body
     const user=await userModel.findOne({email:username})
     if(!user){
-        return res.status(400).json({message:"invalid username or password"})
+        return res.status(400).json({message:"invalid email or password"})
+
     }
+    const isPasswordValid=await bcrypt.compare(password,user.password)
+    if(!isPasswordValid){
+        return res.status(404).json({message:"invalid email or password"})
+    }
+ const token = jwt.sign(
+        { id: user._id, username: user.username },
+        process.env.jwt_secret,
+        { expiresIn: "1d" }
+        
+    )
+    res.cookie("token",token)
+    res.status(200).json({
+        message:"user loggedIn successfully.",
+        user:{
+            id:user._id,
+            username:user.username,
+            email:user.email
+        }
+    })
 }
 
 module.exports = {
-    registerUserController
+    registerUserController,
+    loginUserController,
 }
