@@ -16,7 +16,7 @@ const authController=require("../controllers/auth.controller")
  * @access public
  */
 
-authRouter.post("/login",authController.loginUserController)
+ authRouter.post("/login",authController.loginUserController)
 
 
 
