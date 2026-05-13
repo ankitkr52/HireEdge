@@ -1,7 +1,7 @@
 const express = require('express');  // Fixed typo
 
 const app = express();
-app.use(express.json());
+ app.use(express.json());
 
 // require all the routes here
 const authRouter = require('./routes/auth.routes');
