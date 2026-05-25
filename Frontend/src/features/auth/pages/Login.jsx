@@ -1,14 +1,27 @@
-import React from 'react'
-import {useNavigate,Link} from 'react-router-dom'
-import '../auth.form.scss'
+import React,{useState} from 'react'
+import { useNavigate, Link } from 'react-router'
+import "../auth.form.scss"
+import { useAuth } from '../hooks/useAuth'
 
 const Login = () => {
 
+    const { loading, handleLogin } = useAuth()
+    const navigate = useNavigate()
+
+    const [ email, setEmail ] = useState("")
+    const [ password, setPassword ] = useState("")
+
     const handleSubmit = async (e) => {
         e.preventDefault()
-        await handleLogin({ email, password })
+        await handleLogin({email,password})
         navigate('/')
     }
+
+    if(loading){
+        return (<main><h1>HireEdge Loading......</h1></main>)
+    }
+
+
     return (
         <main>
             <div className="form-container">
@@ -16,17 +29,19 @@ const Login = () => {
                 <form onSubmit={handleSubmit}>
                     <div className="input-group">
                         <label htmlFor="email">Email</label>
-                        <input type="email" id='email' name='email' placeholder='Enter Your Email Address' />
+                        <input
+                            onChange={(e) => { setEmail(e.target.value) }}
+                            type="email" id="email" name='email' placeholder='Enter email address' />
                     </div>
-
                     <div className="input-group">
                         <label htmlFor="password">Password</label>
-                        <input type="password" id='password' name='password' placeholder='Enter Your Password' />
+                        <input
+                            onChange={(e) => { setPassword(e.target.value) }}
+                            type="password" id="password" name='password' placeholder='Enter password' />
                     </div>
-                    <button type="submit" className="button primary-button">Login</button>
+                    <button className='button primary-button' >Login</button>
                 </form>
-
-                   <p>Don't have an account? <Link to={"/register"} >Register</Link> </p>
+                <p>Don't have an account? <Link to={"/register"} >Register</Link> </p>
             </div>
         </main>
     )
