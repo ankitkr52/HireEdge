@@ -1,7 +1,11 @@
 require('dotenv').config();
 const app = require('./src/app');
 const connectDB = require('./src/config/database');
+const generateInterviewReport = require('./src/services/ai.service');
+const{resume,selfDescription,jobDescription}=require('./src/services/temp')
 
+
+generateInterviewReport({resume,selfDescription,jobDescription})
 
 // Wait for database connection before starting server
 connectDB().then(() => {
