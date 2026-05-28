@@ -112,6 +112,10 @@ const interviewReportSchema = new mongoose.Schema({
         type: String,
         required: [true, "Job description required"]
     },
+    selfDescription: {
+        type: String,
+        default: ""
+    },
     resume: {
         type: String,
     },
@@ -125,7 +129,11 @@ const interviewReportSchema = new mongoose.Schema({
     technicalQuestions: [technicalquestionSchema],
     behaviorQuestions: [behaviorlQuestionSchema],
     skillGaps: [skillGapSchema],
-    preprationPlan: [preprationPlanSchema]
+    preprationPlan: [preprationPlanSchema],
+    user:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users",
+    }
 },{
     timestamps: true
 })
