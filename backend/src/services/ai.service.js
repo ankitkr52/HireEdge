@@ -4,7 +4,7 @@ const { zodToJsonSchema } = require("zod-to-json-schema")
 
 
 const ai = new GoogleGenAI({
-    apiKey: process.env.GOOGLE_GENAI_API_KEY
+    apiKey: process.env.GOOGLE_GENAI_API_KEY 
 })
 
 
@@ -50,7 +50,7 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
         }
     })
 
-    console.log(JSON.parse(response.text))
+   return JSON.parse(response.text)
 
 
 }

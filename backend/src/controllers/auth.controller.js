@@ -90,7 +90,7 @@ async function loginUserController(req, res) {
             { expiresIn: "1d" }
         )
 
-        res.cookie("token", token, { httpOnly: true })  // ✅ added httpOnly
+        res.cookie("token", token, { httpOnly: true })  
 
         res.status(200).json({
             message: "User logged in successfully.",
@@ -101,7 +101,7 @@ async function loginUserController(req, res) {
             }
         })
     } catch (error) {
-        res.status(500).json({ message: "Internal server error" })  // ✅ added try/catch
+        res.status(500).json({ message: "Internal server error" })  
     }
 }
 
