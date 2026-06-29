@@ -4,7 +4,7 @@ const { zodToJsonSchema } = require("zod-to-json-schema")
 
 
 const ai = new GoogleGenAI({
-    apiKey: process.env.GOOGLE_GENAI_API_KEY 
+    apiKey: process.env.GOOGLE_GENAI_API_KEY
 })
 
 
@@ -36,25 +36,36 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
 
 
     const prompt = `Generate an interview report for a candidate with the following details:
-                        Resume: ${resume}
-                        Self Description: ${selfDescription}
-                        Job Description: ${jobDescription}
- `
+                            Resume: ${resume}
+                            Self Description: ${selfDescription}
+                            Job Description: ${jobDescription}
+    `
 
     const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         contents: prompt,
         config: {
             responseMimeType: "application/json",
-            responseSchema: zodToJsonSchema(interviewReportSchema),
+            responseJsonSchema: zodToJsonSchema(interviewReportSchema),
         }
     })
 
-   return JSON.parse(response.text)
+    if (!response || !response.text) {
+        console.error('AI response empty', { candidates: response?.candidates })
+        throw new Error('AI returned empty result')
+    }
+
+    let result
+    try {
+        result = JSON.parse(response.text)
+    } catch (err) {
+        console.error('Failed to parse AI output as JSON', response.text)
+        throw err
+    }
+    return result
 
 
 }
-
 
 
 module.exports = generateInterviewReport;

@@ -55,7 +55,7 @@ const technicalquestionSchema = new mongoose.Schema({
     _id: false
 })
 
-const behaviorlQuestionSchema = new mongoose.Schema({
+const behavioralQuestionSchema  = new mongoose.Schema({
     question: {
         type: String,
         required: [true, "Technical question is required "]
@@ -88,7 +88,7 @@ const skillGapSchema = new mongoose.Schema({
 })
 
 
-const preprationPlanSchema = new mongoose.Schema({
+const preparationPlanSchema  = new mongoose.Schema({
     day: {
         type: Number,
         required: [true, "Day is required"]
@@ -119,6 +119,10 @@ const interviewReportSchema = new mongoose.Schema({
     resume: {
         type: String,
     },
+     title: {                         
+        type: String,
+        default: ""
+    },
     matchScore: {
         type: Number,
         default: 0,
@@ -127,9 +131,9 @@ const interviewReportSchema = new mongoose.Schema({
     },
 
     technicalQuestions: [technicalquestionSchema],
-    behaviorQuestions: [behaviorlQuestionSchema],
+    behavioralQuestions: [behavioralQuestionSchema],
     skillGaps: [skillGapSchema],
-    preprationPlan: [preprationPlanSchema],
+     preparationPlan: [preparationPlanSchema],
     user:{
     type: mongoose.Schema.Types.ObjectId,
     ref: "users",
