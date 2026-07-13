@@ -4,7 +4,7 @@ const interviewController = require('../controllers/interview.controller')
 const upload = require('../middleWare/file.middleware')
 
 
-const interviewRouter = express.Router()
+const interviewRouter  = express.Router()
 
 /**
  * @routes post/api/interview
@@ -13,7 +13,8 @@ const interviewRouter = express.Router()
  */
 
 
-interviewRouter.post('/', authMiddleware, upload.single("resume"), interviewController.generateInterViewReportController)
+interviewRouter.post("/", authMiddleware, upload.single("resume"), interviewController.generateInterViewReportController)
+
 
 
 module.exports = interviewRouter
