@@ -21,7 +21,7 @@ export async function login({ email, password }) {
         }, config)
         return response.data
     } catch (err) {
-        throw err  // ✅
+        throw err  
     }
 }
 
@@ -30,15 +30,15 @@ export async function logout() {
         const response = await axios.get(`${BASE_URL}/logout`, config)
         return response.data
     } catch (err) {
-        throw err  // ✅
+        throw err  
     }
 }
 
 export async function getMe() {
     try {
-        const response = await axios.get(`${BASE_URL}/get-me`, config)  // ✅ = → :
+        const response = await axios.get(`${BASE_URL}/get-me`, config)  
         return response.data
     } catch (err) {
-        throw err  // ✅
+        throw err  
     }
 }

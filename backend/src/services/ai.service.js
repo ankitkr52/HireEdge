@@ -131,7 +131,7 @@ STRICT REQUIREMENTS:
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
-                responseSchema: geminiResponseSchema,  // ✅ manual schema
+                responseSchema: geminiResponseSchema,  
                 maxOutputTokens: 8192,
                 temperature: 0.2
             }
@@ -144,11 +144,7 @@ STRICT REQUIREMENTS:
         const result = JSON.parse(response.text)
 
         // ✅ Debug
-        console.log("=== RESULT KEYS ===", Object.keys(result))
-        console.log("technicalQuestions:", result.technicalQuestions?.length)
-        console.log("behavioralQuestions:", result.behavioralQuestions?.length)
-        console.log("skillGaps:", result.skillGaps?.length)
-        console.log("preparationPlan:", result.preparationPlan?.length)
+      
 
         // ✅ Zod validation — validation ke liye rakha hai
         const validation = interviewReportZodSchema.safeParse(result)
