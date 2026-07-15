@@ -1,0 +1,546 @@
+// ── Variables (matches home.scss) ─────────────────────────────────────────────
+$bg-page:        #0d1117;
+$bg-card:        #161b22;
+$bg-panel:       #1c2230;
+$bg-input:       #1e2535;
+$border-color:   #2a3348;
+$text-primary:   #e6edf3;
+$text-secondary: #c9d1d9;
+$text-muted:     #7d8590;
+$accent:         #ff2d78;
+$font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+$severity-high:   #ff4d4d;
+$severity-medium: #f5a623;
+$severity-low:    #3fb950;
+
+// ── Scrollbar ─────────────────────────────────────────────────────────────────
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+::-webkit-scrollbar       { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: $border-color; border-radius: 4px; }
+
+// ── Page Shell ────────────────────────────────────────────────────────────────
+.interview-page {
+    width: 100%;
+    height: 100vh;
+    background-color: $bg-page;
+    color: $text-primary;
+    font-family: $font-stack;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+// ── 3-Column Layout ───────────────────────────────────────────────────────────
+.interview-layout {
+    display: grid;
+    grid-template-columns: 210px 1px 1fr 1px 230px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.interview-divider {
+    background-color: $border-color;
+}
+
+// ── Left Nav ──────────────────────────────────────────────────────────────────
+.interview-nav {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+
+    &__top {
+        padding: 1.25rem 1rem 1rem;
+        flex-shrink: 0;
+    }
+
+    &__job-title {
+        font-size: .75rem;
+        font-weight: 600;
+        color: $accent;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: .2rem;
+    }
+
+    &__company {
+        font-size: .7rem;
+        color: $text-muted;
+    }
+
+    &__hr {
+        height: 1px;
+        background: $border-color;
+        margin: 0 1rem .75rem;
+        flex-shrink: 0;
+    }
+
+    &__label {
+        font-size: .65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: $text-muted;
+        padding: .25rem 1rem .5rem;
+        flex-shrink: 0;
+    }
+
+    &__items {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        width: 100%;
+        padding: .6rem 1rem;
+        background: none;
+        border: none;
+        border-left: 2px solid transparent;
+        color: $text-muted;
+        font-family: $font-stack;
+        font-size: .82rem;
+        cursor: pointer;
+        text-align: left;
+        transition: background-color .15s, color .15s;
+
+        &:hover {
+            color: $text-secondary;
+            background: rgba(255, 255, 255, .04);
+        }
+
+        &--active {
+            color: $accent;
+            background: rgba($accent, .07);
+            border-left-color: $accent;
+
+            .interview-nav__icon svg { stroke: $accent; }
+        }
+    }
+
+    &__icon {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+
+        svg { width: 15px; height: 15px; }
+    }
+
+    &__count {
+        margin-left: auto;
+        font-size: .68rem;
+        background: $bg-input;
+        color: $text-muted;
+        border: 1px solid $border-color;
+        padding: .1rem .4rem;
+        border-radius: 10px;
+    }
+
+    &__bottom {
+        padding: 1rem;
+        border-top: 1px solid $border-color;
+        flex-shrink: 0;
+    }
+}
+
+// Download button
+.download-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    width: 100%;
+    padding: .65rem;
+    background: rgba($accent, .1);
+    border: 1px solid rgba($accent, .25);
+    border-radius: 8px;
+    color: $accent;
+    font-size: .8rem;
+    font-weight: 600;
+    font-family: $font-stack;
+    cursor: pointer;
+    transition: background .15s;
+
+    &:hover {
+        background: rgba($accent, .18);
+    }
+
+    svg { width: 14px; height: 14px; flex-shrink: 0; }
+}
+
+// ── Center Content ────────────────────────────────────────────────────────────
+.interview-content {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+}
+
+.content-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: 1.25rem 1.5rem 1rem;
+    border-bottom: 1px solid $border-color;
+    flex-shrink: 0;
+
+    h2 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: $text-primary;
+    }
+
+    &__count {
+        font-size: .72rem;
+        background: $bg-input;
+        border: 1px solid $border-color;
+        color: $text-muted;
+        padding: .2rem .65rem;
+        border-radius: 20px;
+    }
+}
+
+.content-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+}
+
+// ── Question Cards ────────────────────────────────────────────────────────────
+.q-list {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+}
+
+.q-card {
+    background: $bg-card;
+    border: 1px solid $border-color;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color .2s;
+
+    &:hover { border-color: lighten($border-color, 8%); }
+
+    &__header {
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+        padding: .9rem 1rem;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    &__index {
+        flex-shrink: 0;
+        font-size: .65rem;
+        font-weight: 700;
+        color: $accent;
+        background: rgba($accent, .1);
+        border: 1px solid rgba($accent, .2);
+        border-radius: 4px;
+        padding: .15rem .45rem;
+        margin-top: 1px;
+        font-family: monospace;
+    }
+
+    &__question {
+        flex: 1;
+        font-size: .875rem;
+        font-weight: 500;
+        color: $text-primary;
+        line-height: 1.55;
+    }
+
+    &__chevron {
+        flex-shrink: 0;
+        color: $text-muted;
+        margin-top: 2px;
+        transition: transform .2s, color .15s;
+
+        &--open {
+            transform: rotate(180deg);
+            color: $accent;
+        }
+    }
+
+    &__body {
+        padding: .75rem 1rem 1rem;
+        border-top: 1px solid $border-color;
+        display: flex;
+        flex-direction: column;
+        gap: .6rem;
+    }
+
+    &__block {
+        padding: .65rem .8rem;
+        border-radius: 7px;
+        display: flex;
+        flex-direction: column;
+        gap: .3rem;
+
+        p {
+            font-size: .8rem;
+            line-height: 1.6;
+        }
+
+        &--intention {
+            background: #1b1f35;
+            border: 1px solid #2a3060;
+
+            .q-card__block-label { color: #a78bfa; }
+            p { color: #c4b5fd; }
+        }
+
+        &--answer {
+            background: #0f1e15;
+            border: 1px solid #1a3a25;
+
+            .q-card__block-label { color: #3fb950; }
+            p { color: #86efac; }
+        }
+    }
+
+    &__block-label {
+        font-size: .65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+    }
+}
+
+// ── Road Map ──────────────────────────────────────────────────────────────────
+.roadmap-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    padding-top: .25rem;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 27px;
+        top: .5rem;
+        bottom: .5rem;
+        width: 2px;
+        background: linear-gradient(to bottom, $accent, rgba($accent, .08));
+        border-radius: 1px;
+    }
+}
+
+.roadmap-day {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    padding: .75rem 0 .75rem 3.5rem;
+    position: relative;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 20px;
+        top: 1.1rem;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: $bg-page;
+        border: 2px solid $accent;
+        transition: background .2s;
+    }
+
+    &:hover::before {
+        background: rgba($accent, .15);
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+
+    &__badge {
+        font-size: .68rem;
+        font-weight: 700;
+        color: $accent;
+        background: rgba($accent, .1);
+        border: 1px solid rgba($accent, .25);
+        padding: .1rem .5rem;
+        border-radius: 20px;
+        flex-shrink: 0;
+    }
+
+    &__focus {
+        font-size: .9rem;
+        font-weight: 600;
+        color: $text-primary;
+    }
+
+    &__tasks {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+
+        li {
+            display: flex;
+            align-items: flex-start;
+            gap: .5rem;
+            font-size: .82rem;
+            color: $text-muted;
+            line-height: 1.5;
+        }
+    }
+
+    &__bullet {
+        flex-shrink: 0;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: $text-muted;
+        margin-top: 8px;
+    }
+}
+
+// ── Right Sidebar ─────────────────────────────────────────────────────────────
+.interview-sidebar {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    overflow-y: auto;
+    height: 100%;
+}
+
+.sidebar-section {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+}
+
+.sidebar-label {
+    font-size: .65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: $text-muted;
+}
+
+.sidebar-divider {
+    height: 1px;
+    background: $border-color;
+    flex-shrink: 0;
+}
+
+// Match Score
+.match-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+
+    &__ring {
+        width: 86px;
+        height: 86px;
+        border-radius: 50%;
+        border: 3px solid $severity-low;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        &.score--high { border-color: $severity-low; }
+        &.score--mid  { border-color: $severity-medium; }
+        &.score--low  { border-color: $severity-high; }
+    }
+
+    &__value {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: $text-primary;
+        line-height: 1;
+    }
+
+    &__pct {
+        font-size: .7rem;
+        color: $text-muted;
+    }
+
+    &__sub {
+        font-size: .75rem;
+        color: $severity-low;
+        font-weight: 500;
+
+        &.score--mid { color: $severity-medium; }
+        &.score--low { color: $severity-high; }
+    }
+}
+
+// Skill Gaps
+.skill-list {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+}
+
+.skill-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: .45rem .65rem;
+    background: $bg-card;
+    border: 1px solid $border-color;
+    border-radius: 7px;
+    transition: border-color .15s;
+
+    &:hover { border-color: lighten($border-color, 8%); }
+}
+
+.skill-name {
+    font-size: .78rem;
+    color: $text-secondary;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.severity-badge {
+    font-size: .62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: .1rem .4rem;
+    border-radius: 4px;
+    flex-shrink: 0;
+
+    &--high   { color: $severity-high;   background: rgba($severity-high, .12);   border: 1px solid rgba($severity-high, .2); }
+    &--medium { color: $severity-medium; background: rgba($severity-medium, .1);  border: 1px solid rgba($severity-medium, .2); }
+    &--low    { color: $severity-low;    background: rgba($severity-low, .1);     border: 1px solid rgba($severity-low, .2); }
+}
+
+// Loading screen
+.loading-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100vh;
+    background: $bg-page;
+    color: $text-muted;
+    font-family: $font-stack;
+    font-size: .9rem;
+}
