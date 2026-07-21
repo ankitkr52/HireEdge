@@ -10,7 +10,7 @@ export async function register({ username, email, password }) {
         }, config)
         return response.data
     } catch (err) {
-        throw err  // ✅
+        throw err  
     }
 }
 

@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext ,useEffect} from "react";
 import { useParams } from "react-router-dom";
 import {
     generateInterviewReport,
@@ -30,6 +30,7 @@ export const useInterview = () => {
         } finally {
             setLoading(false);
         }
+         return response.interviewReport
     };
 
     const getReportById = async (id = interviewId) => {
@@ -45,6 +46,7 @@ export const useInterview = () => {
         } finally {
             setLoading(false);
         }
+         return response.interviewReport
     };
 
     const getReports = async () => {
@@ -60,6 +62,7 @@ export const useInterview = () => {
         } finally {
             setLoading(false);
         }
+         return response.interviewReport
     };
 
     const getResumePdf = async (id = interviewId) => {
@@ -70,6 +73,14 @@ export const useInterview = () => {
         window.open(`/api/interview/report/${id}/pdf`, "_blank", "noopener,noreferrer");
         return null;
     };
+
+     useEffect(() => {
+        if (interviewId) {
+            getReportById(interviewId)
+        } else {
+            getReports()
+        }
+    }, [ interviewId ])
 
     return { loading, report, reports, generateReport, getReportById, getReports, getResumePdf };
 };
