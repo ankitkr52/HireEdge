@@ -1,36 +1,37 @@
 const { GoogleGenAI } = require("@google/genai")
 const { z } = require("zod")
+const puppeteer = require('puppeteer')
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
 })
 
-// ✅ Zod — sirf VALIDATION ke liye (rakho isse)
+
 const interviewReportZodSchema = z.object({
     title: z.string().min(1),
     matchScore: z.number().int().min(0).max(100),
     technicalQuestions: z.array(z.object({
-        question:  z.string(),
+        question: z.string(),
         intention: z.string(),
-        answer:    z.string()
+        answer: z.string()
     })).min(5),
     behavioralQuestions: z.array(z.object({
-        question:  z.string(),
+        question: z.string(),
         intention: z.string(),
-        answer:    z.string()
+        answer: z.string()
     })).min(3),
     skillGaps: z.array(z.object({
-        skill:    z.string(),
+        skill: z.string(),
         severity: z.enum(["low", "medium", "high"])
     })).min(3),
     preparationPlan: z.array(z.object({
-        day:   z.number().int(),
+        day: z.number().int(),
         focus: z.string(),
         tasks: z.array(z.string()).min(3)
     })).min(7)
 })
 
-// ✅ Gemini — MANUAL schema (zodToJsonSchema hatao — ye problem hai)
+
 const geminiResponseSchema = {
     type: "object",
     properties: {
@@ -48,9 +49,9 @@ const geminiResponseSchema = {
             items: {
                 type: "object",
                 properties: {
-                    question:  { type: "string" },
+                    question: { type: "string" },
                     intention: { type: "string" },
-                    answer:    { type: "string" }
+                    answer: { type: "string" }
                 },
                 required: ["question", "intention", "answer"]
             }
@@ -61,9 +62,9 @@ const geminiResponseSchema = {
             items: {
                 type: "object",
                 properties: {
-                    question:  { type: "string" },
+                    question: { type: "string" },
                     intention: { type: "string" },
-                    answer:    { type: "string" }
+                    answer: { type: "string" }
                 },
                 required: ["question", "intention", "answer"]
             }
@@ -74,7 +75,7 @@ const geminiResponseSchema = {
             items: {
                 type: "object",
                 properties: {
-                    skill:    { type: "string" },
+                    skill: { type: "string" },
                     severity: {
                         type: "string",
                         enum: ["low", "medium", "high"]
@@ -89,7 +90,7 @@ const geminiResponseSchema = {
             items: {
                 type: "object",
                 properties: {
-                    day:   { type: "integer" },
+                    day: { type: "integer" },
                     focus: { type: "string" },
                     tasks: {
                         type: "array",
@@ -130,7 +131,7 @@ STRICT REQUIREMENTS:
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
-                responseSchema: geminiResponseSchema,  
+                responseSchema: geminiResponseSchema,
                 maxOutputTokens: 8192,
                 temperature: 0.2
             }
@@ -142,16 +143,16 @@ STRICT REQUIREMENTS:
 
         const result = JSON.parse(response.text)
 
-      
 
-      
+
+
         const validation = interviewReportZodSchema.safeParse(result)
         if (!validation.success) {
             console.error("Zod errors:", JSON.stringify(validation.error.format(), null, 2))
-            return result   // ✅ return — never throw
+            return result   
         }
 
-       
+
         return validation.data
 
     } catch (error) {
@@ -160,4 +161,98 @@ STRICT REQUIREMENTS:
     }
 }
 
-module.exports = generateInterviewReport
+async function generatePdfFromHtml(htmlContent) {
+    let browser = null
+    try {
+        browser = await puppeteer.launch({
+            headless: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage'
+            ]
+        })
+        const page = await browser.newPage()
+        await page.setContent(htmlContent, { waitUntil: "networkidle0" })
+        const pdfBuffer = await page.pdf({
+            format: "A4",
+            printBackground: true,
+            margin: {
+                top: "20mm",
+                bottom: "20mm",
+                left: "15mm",
+                right: "15mm"
+            }
+        })
+        return pdfBuffer
+    } catch (error) {
+        console.error("Puppeteer error:", error.message)
+        throw error
+    } finally {
+        if (browser) await browser.close()  // ✅ hamesha close hoga
+    }
+}
+
+
+const geminiResponseSchema2 = {
+    type: "object",
+    properties: {
+        html: {
+            type: "string",
+            description: "Complete HTML content of the ATS-friendly resume"
+        }
+    },
+    required: ["html"]
+}
+
+async function generateResumePdf({ resume, selfDescription, jobDescription }) {
+    try {
+        const prompt = `Generate a professional ATS-friendly resume in HTML format for the following candidate:
+
+Resume: ${resume}
+Self Description: ${selfDescription}
+Job Description: ${jobDescription}
+
+Requirements:
+- Return ONLY a JSON object with a single "html" field
+- HTML should be complete, self-contained with inline CSS
+- Design should be clean, professional and simple
+- Content should be ATS-friendly and easily parsable
+- Resume should be 1-2 pages when converted to PDF
+- Highlight relevant skills and experience matching the job description
+- Do NOT make it sound AI-generated — write like a real human resume
+- Use professional fonts and subtle color accents if needed`
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",          
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: geminiResponseSchema2,  
+                maxOutputTokens: 8192,
+                temperature: 0.2
+            }
+        })
+
+        if (!response || !response.text) {
+            throw new Error("AI returned empty response")
+        }
+
+        const jsonContent = JSON.parse(response.text)
+
+        if (!jsonContent.html) {
+            throw new Error("AI did not return HTML content")
+        }
+
+        console.log("HTML generated — length:", jsonContent.html.length)
+
+        const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
+        return pdfBuffer
+
+    } catch (error) {
+        console.error("generateResumePdf error:", error.message)
+        throw error
+    }
+}
+
+module.exports = {generateInterviewReport,generateResumePdf}

@@ -12,7 +12,6 @@ const interviewRouter  = express.Router()
  * @access private
  */
 
-
 interviewRouter.post("/", authMiddleware, upload.single("resume"), interviewController.generateInterViewReportController)
 
 /**
@@ -28,6 +27,10 @@ interviewRouter.get("/report/:interviewId", authMiddleware, interviewController.
  * @access private
  */
 interviewRouter.get("/", authMiddleware, interviewController.getAllInterviewReportsController)
+
+
+
+interviewRouter.post("/resume/pdf/:interviewReportId", authMiddleware, interviewController.generateResumePdfController)
 
 
 module.exports = interviewRouter
