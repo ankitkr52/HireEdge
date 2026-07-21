@@ -108,7 +108,6 @@ const geminiResponseSchema = {
 
 async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
     try {
-        console.log("=== AI SERVICE CALLED ===")
 
         const prompt = `You are an expert interview preparation assistant.
 Analyze the candidate profile against the job description and generate a complete interview report.
@@ -143,17 +142,16 @@ STRICT REQUIREMENTS:
 
         const result = JSON.parse(response.text)
 
-        // ✅ Debug
       
 
-        // ✅ Zod validation — validation ke liye rakha hai
+      
         const validation = interviewReportZodSchema.safeParse(result)
         if (!validation.success) {
             console.error("Zod errors:", JSON.stringify(validation.error.format(), null, 2))
             return result   // ✅ return — never throw
         }
 
-        console.log("=== REPORT GENERATED SUCCESSFULLY ===")
+       
         return validation.data
 
     } catch (error) {
