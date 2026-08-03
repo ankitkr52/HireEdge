@@ -178,7 +178,7 @@ async function generatePdfFromHtml(htmlContent) {
             format: "A4",
             printBackground: true,
             margin: {
-                top: "20mm",
+                top: "200mm",
                 bottom: "20mm",
                 left: "15mm",
                 right: "15mm"
@@ -189,7 +189,7 @@ async function generatePdfFromHtml(htmlContent) {
         console.error("Puppeteer error:", error.message)
         throw error
     } finally {
-        if (browser) await browser.close()  // ✅ hamesha close hoga
+        if (browser) await browser.close()  
     }
 }
 
