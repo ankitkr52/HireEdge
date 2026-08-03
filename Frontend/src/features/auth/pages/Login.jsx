@@ -1,24 +1,28 @@
-import React,{useState} from 'react'
+import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router'
 import "../auth.form.scss"
 import { useAuth } from '../hooks/useAuth'
+import LoadingScreen from '../components/LoadingScreen'
 
 const Login = () => {
 
     const { loading, handleLogin } = useAuth()
     const navigate = useNavigate()
 
-    const [ email, setEmail ] = useState("")
-    const [ password, setPassword ] = useState("")
+    const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        await handleLogin({email,password})
+        await handleLogin({ email, password })
         navigate('/')
     }
 
-    if(loading){
-        return (<main><h1>HireEdge Loading......</h1></main>)
+    if (loading) {
+        return (
+            <LoadingScreen message="Signing you in"
+                sub="Verifying your credentials, please wait..." />
+        )
     }
 
 

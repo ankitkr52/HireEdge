@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router'
 import LoadingScreen from '../../auth/components/LoadingScreen'
 
 const Home = () => {
-    const { loading,generateReport,reports } = useInterview()
+    const { loading, generateReport, reports } = useInterview()
     const resumeInputRef = useRef()
     const [jobDescription, setJobDescription] = useState("")
     const [selfDescription, setSelfDescription] = useState("")
@@ -19,15 +19,15 @@ const Home = () => {
     }
 
 
-    const handleFileChange = (e) => {   
+    const handleFileChange = (e) => {
         const file = e.target.files[0]
         if (file) setFileName(file.name)
     }
 
     if (loading) {
         return (
-            <LoadingScreen message="Welcome back to HireEdge..."
-        sub="Please wait while we securely log you into HireEdge" />
+            <LoadingScreen message="Loading your reports"
+                sub="Fetching your previous interview plans..." />
         )
     }
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'  
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import LoadingScreen from '../components/LoadingScreen'
 
 const Register = () => {
     const navigate = useNavigate()
@@ -8,12 +9,12 @@ const Register = () => {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
-    const { loading, handleRegister } = useAuth() 
+    const { loading, handleRegister } = useAuth()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-            await handleRegister({ username, email, password })  
+            await handleRegister({ username, email, password })
             navigate("/")
         } catch (err) {
             setError(err.response?.data?.message || "Something went wrong")
@@ -21,7 +22,10 @@ const Register = () => {
     }
 
     if (loading) {
-        return <main><h1>HireEdge Loading.......</h1></main>
+        return (
+            <LoadingScreen message="Creating your account"
+                sub="Setting up your HireEdge profile..." />
+        )
     }
 
     return (
@@ -45,7 +49,7 @@ const Register = () => {
                         <input onChange={(e) => setPassword(e.target.value)}
                             type="password" id="password" placeholder='Enter password' />
                     </div>
-                    <button type="submit" className='button primary-button'>Register</button>  
+                    <button type="submit" className='button primary-button'>Register</button>
                 </form>
                 <p>Already have an account? <Link to="/login">Login</Link></p>
             </div>

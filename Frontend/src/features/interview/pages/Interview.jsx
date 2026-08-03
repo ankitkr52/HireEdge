@@ -96,8 +96,8 @@ const Interview = () => {
 
     if (loading || !report) {
         return (
-            <LoadingScreen message="Generating your interview plan"
-        sub="AI is analyzing your resume and job description" />
+            <LoadingScreen  message="Loading your interview plan"
+    sub="Fetching your personalized report..." />
         )
     }
 
