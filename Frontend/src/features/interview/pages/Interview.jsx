@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import '../style/interview.scss'
 import { useInterview } from '../hooks/useInterview'
 import { useNavigate, useParams } from 'react-router'
+import LoadingScreen from '../../auth/components/LoadingScreen'
 
 const NAV_ITEMS = [
     {
@@ -95,9 +96,8 @@ const Interview = () => {
 
     if (loading || !report) {
         return (
-            <div className='loading-screen'>
-                <p>Loading your interview plan…</p>
-            </div>
+            <LoadingScreen message="Generating your interview plan"
+        sub="AI is analyzing your resume and job description" />
         )
     }
 

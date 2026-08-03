@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react'
 import "../style/home.scss"
 import { useInterview } from '../hooks/useInterview'
 import { useNavigate } from 'react-router'
+import LoadingScreen from '../../auth/components/LoadingScreen'
 
 const Home = () => {
     const { loading,generateReport,reports } = useInterview()
@@ -25,9 +26,8 @@ const Home = () => {
 
     if (loading) {
         return (
-            <main className='loading-screen'>
-                <h1>Loading your interview plan...</h1>
-            </main>
+            <LoadingScreen message="Welcome back to HireEdge..."
+        sub="Please wait while we securely log you into HireEdge" />
         )
     }
 
