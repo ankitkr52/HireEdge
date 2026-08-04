@@ -165,30 +165,39 @@ STRICT REQUIREMENTS:
 async function generatePdfFromHtml(htmlContent) {
     let browser = null
     try {
+        // ✅ Production aur Local dono handle karo
+        const isProduction = process.env.NODE_ENV === 'production'
+
         browser = await puppeteer.launch({
-           args: chromium.args,
+            args:            isProduction ? chromium.args : ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
             defaultViewport: chromium.defaultViewport,
-            executablePath: await chromium.executablePath(),
-            headless: chromium.headless,
+            executablePath:  isProduction
+                                ? await chromium.executablePath()
+                                : undefined,   // local mein default path use hoga
+            headless: true
         })
+
         const page = await browser.newPage()
         await page.setContent(htmlContent, { waitUntil: "networkidle0" })
+
         const pdfBuffer = await page.pdf({
             format: "A4",
             printBackground: true,
             margin: {
-                top: "200mm",
+                top:    "20mm",   // ✅ 200mm → 20mm fix
                 bottom: "20mm",
-                left: "15mm",
-                right: "15mm"
+                left:   "15mm",
+                right:  "15mm"
             }
         })
+
         return pdfBuffer
+
     } catch (error) {
         console.error("Puppeteer error:", error.message)
         throw error
     } finally {
-        if (browser) await browser.close()  
+        if (browser) await browser.close()
     }
 }
 
