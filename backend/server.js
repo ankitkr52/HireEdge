@@ -5,8 +5,6 @@ const connectDB = require('./src/config/database');
 
 
 
-
-
 // Wait for database connection before starting server
 connectDB().then(() => {
     app.listen(3000, () => {
