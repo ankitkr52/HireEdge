@@ -18,6 +18,7 @@ const interviewRouter=require('./routes/interview.routes')
 
 
 // using all the routes here
+app.get('/', (req, res) => res.send("API is working here"))
 app.use('/api/auth', authRouter);
 app.use('/api/interview',interviewRouter)
 module.exports = app;
