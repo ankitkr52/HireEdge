@@ -150,6 +150,33 @@ $severity-low:    #3fb950;
         flex-shrink: 0;
     }
 }
+// interview.scss mein add karo
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .3rem .75rem;
+    background: transparent;
+    border: 1px solid $border-color;
+    border-radius: 6px;
+    color: $text-muted;
+    font-size: .78rem;
+    font-family: $font-stack;
+    cursor: pointer;
+    transition: all .15s;
+    margin-bottom: .75rem;
+
+    &:hover {
+        border-color: $accent;
+        color: $accent;
+    }
+
+    svg {
+        width: 14px;
+        height: 14px;
+    }
+}
 
 // Download button
 .download-btn {
