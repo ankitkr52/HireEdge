@@ -1,102 +1,61 @@
 const { GoogleGenAI } = require("@google/genai")
 const { z } = require("zod")
-const puppeteer = require('puppeteer-core')
-const chromium = require('@sparticuz/chromium')
+const { zodToJsonSchema } = require("zod-to-json-schema")
+const puppeteer = require('puppeteer')
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
 })
 
-
-const interviewReportZodSchema = z.object({
-    title: z.string().min(1),
-    matchScore: z.number().int().min(0).max(100),
-    technicalQuestions: z.array(z.object({
-        question: z.string(),
-        intention: z.string(),
-        answer: z.string()
-    })).min(5),
-    behavioralQuestions: z.array(z.object({
-        question: z.string(),
-        intention: z.string(),
-        answer: z.string()
-    })).min(3),
-    skillGaps: z.array(z.object({
-        skill: z.string(),
-        severity: z.enum(["low", "medium", "high"])
-    })).min(3),
-    preparationPlan: z.array(z.object({
-        day: z.number().int(),
-        focus: z.string(),
-        tasks: z.array(z.string()).min(3)
-    })).min(7)
-})
-
-
+// ── Interview Report Schema ───────────────────────────────────────────────────
 const geminiResponseSchema = {
     type: "object",
     properties: {
-        title: {
-            type: "string",
-            description: "Exact job title from the job description"
-        },
-        matchScore: {
-            type: "integer",
-            description: "Integer from 0 to 100 showing candidate fit"
-        },
+        title: { type: "string" },
+        matchScore: { type: "integer" },
         technicalQuestions: {
             type: "array",
-            description: "Minimum 5 technical questions as objects",
             items: {
                 type: "object",
                 properties: {
-                    question: { type: "string" },
+                    question:  { type: "string" },
                     intention: { type: "string" },
-                    answer: { type: "string" }
+                    answer:    { type: "string" }
                 },
                 required: ["question", "intention", "answer"]
             }
         },
         behavioralQuestions: {
             type: "array",
-            description: "Minimum 3 behavioral questions as objects",
             items: {
                 type: "object",
                 properties: {
-                    question: { type: "string" },
+                    question:  { type: "string" },
                     intention: { type: "string" },
-                    answer: { type: "string" }
+                    answer:    { type: "string" }
                 },
                 required: ["question", "intention", "answer"]
             }
         },
         skillGaps: {
             type: "array",
-            description: "Minimum 3 skill gaps as objects",
             items: {
                 type: "object",
                 properties: {
-                    skill: { type: "string" },
-                    severity: {
-                        type: "string",
-                        enum: ["low", "medium", "high"]
-                    }
+                    skill:    { type: "string" },
+                    severity: { type: "string", enum: ["low", "medium", "high"] }
                 },
                 required: ["skill", "severity"]
             }
         },
         preparationPlan: {
             type: "array",
-            description: "Minimum 7 day plan as objects",
             items: {
                 type: "object",
                 properties: {
-                    day: { type: "integer" },
+                    day:   { type: "integer" },
                     focus: { type: "string" },
-                    tasks: {
-                        type: "array",
-                        items: { type: "string" }
-                    }
+                    tasks: { type: "array", items: { type: "string" } }
                 },
                 required: ["day", "focus", "tasks"]
             }
@@ -108,8 +67,55 @@ const geminiResponseSchema = {
     ]
 }
 
+// ── PDF Schema ────────────────────────────────────────────────────────────────
+const resumePdfSchema = {
+    type: "object",
+    properties: {
+        html: {
+            type: "string",
+            description: "Complete HTML content of the ATS-friendly resume"
+        }
+    },
+    required: ["html"]
+}
+
+// ── PDF Generator ─────────────────────────────────────────────────────────────
+async function generatePdfFromHtml(htmlContent) {
+    let browser = null
+    try {
+        browser = await puppeteer.launch({
+            headless: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage'
+            ]
+        })
+        const page = await browser.newPage()
+        await page.setContent(htmlContent, { waitUntil: "networkidle0" })
+        const pdfBuffer = await page.pdf({
+            format: "A4",
+            printBackground: true,
+            margin: {
+                top:    "20mm",
+                bottom: "20mm",
+                left:   "15mm",
+                right:  "15mm"
+            }
+        })
+        return pdfBuffer
+    } catch (error) {
+        console.error("Puppeteer error:", error.message)
+        throw error
+    } finally {
+        if (browser) await browser.close()
+    }
+}
+
+// ── Interview Report Generator ────────────────────────────────────────────────
 async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
     try {
+        console.log("=== AI SERVICE CALLED ===")
 
         const prompt = `You are an expert interview preparation assistant.
 Analyze the candidate profile against the job description and generate a complete interview report.
@@ -118,13 +124,12 @@ Resume: ${resume}
 Self Description: ${selfDescription}
 Job Description: ${jobDescription}
 
-STRICT REQUIREMENTS:
-- technicalQuestions: minimum 5 OBJECTS, each with "question", "intention", "answer" fields
-- behavioralQuestions: minimum 3 OBJECTS, each with "question", "intention", "answer" fields
-- skillGaps: minimum 3 OBJECTS, each with "skill" and "severity" fields
-- preparationPlan: minimum 7 OBJECTS, each with "day", "focus", "tasks" fields
-- Do NOT return flat arrays of strings
-- Each array item MUST be an object with all required fields
+REQUIREMENTS:
+- technicalQuestions: minimum 5 items, each with question, intention, answer
+- behavioralQuestions: minimum 3 items, each with question, intention, answer
+- skillGaps: minimum 3 items, each with skill and severity (low/medium/high)
+- preparationPlan: minimum 7 days, each with day number, focus, and 3+ tasks
+- Do NOT return empty arrays
 - Return ONLY valid JSON`
 
         const response = await ai.models.generateContent({
@@ -144,17 +149,13 @@ STRICT REQUIREMENTS:
 
         const result = JSON.parse(response.text)
 
+        console.log("=== RESULT KEYS ===", Object.keys(result))
+        console.log("technicalQuestions:", result.technicalQuestions?.length)
+        console.log("behavioralQuestions:", result.behavioralQuestions?.length)
+        console.log("skillGaps:", result.skillGaps?.length)
+        console.log("preparationPlan:", result.preparationPlan?.length)
 
-
-
-        const validation = interviewReportZodSchema.safeParse(result)
-        if (!validation.success) {
-            console.error("Zod errors:", JSON.stringify(validation.error.format(), null, 2))
-            return result   
-        }
-
-
-        return validation.data
+        return result
 
     } catch (error) {
         console.error("=== AI SERVICE ERROR ===", error.message)
@@ -162,88 +163,65 @@ STRICT REQUIREMENTS:
     }
 }
 
-async function generatePdfFromHtml(htmlContent) {
-    let browser = null
-    try {
-        // ✅ Production aur Local dono handle karo
-        const isProduction = process.env.NODE_ENV === 'production'
-
-        browser = await puppeteer.launch({
-            args:            isProduction ? chromium.args : ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-            defaultViewport: chromium.defaultViewport,
-            executablePath:  isProduction
-                                ? await chromium.executablePath()
-                                : undefined,   // local mein default path use hoga
-            headless: true
-        })
-
-        const page = await browser.newPage()
-        await page.setContent(htmlContent, { waitUntil: "networkidle0" })
-
-        const pdfBuffer = await page.pdf({
-            format: "A4",
-            printBackground: true,
-            margin: {
-                top:    "20mm",   // ✅ 200mm → 20mm fix
-                bottom: "20mm",
-                left:   "15mm",
-                right:  "15mm"
-            }
-        })
-
-        return pdfBuffer
-
-    } catch (error) {
-        console.error("Puppeteer error:", error.message)
-        throw error
-    } finally {
-        if (browser) await browser.close()
-    }
-}
-
-
-const geminiResponseSchema2 = {
-    type: "object",
-    properties: {
-        html: {
-            type: "string",
-            description: "Complete HTML content of the ATS-friendly resume"
-        }
-    },
-    required: ["html"]
-}
-
+// ── Resume PDF Generator ──────────────────────────────────────────────────────
 async function generateResumePdf({ resume, selfDescription, jobDescription }) {
     try {
-        const prompt = `Generate a professional ATS-friendly resume in HTML format for the following candidate:
+        const prompt = `You are an expert resume writer and career coach with 10+ years of experience helping candidates land jobs at top companies.
 
-Resume: ${resume}
+Your task is to generate a professional, ATS-optimized resume in pure HTML format.
+
+CANDIDATE DATA:
+Resume/Experience: ${resume}
 Self Description: ${selfDescription}
-Job Description: ${jobDescription}
+Target Job Description: ${jobDescription}
 
-Requirements:
-- Return ONLY a JSON object with a single "html" field
-- HTML should be complete, self-contained with inline CSS
-- Design should be clean, professional and simple
-- Content should be ATS-friendly and easily parsable
-- Resume should be 1-2 pages when converted to PDF
-- Highlight relevant skills and experience matching the job description
-- Do NOT make it sound AI-generated — write like a real human resume
-- Use professional fonts and subtle color accents if needed`
+STRICT REQUIREMENTS:
+1. CONTENT RULES:
+   - Tailor every bullet point specifically to the target job description
+   - Use strong action verbs (Built, Engineered, Designed, Implemented, Optimized)
+   - Add quantifiable achievements wherever possible
+   - Write in a natural human tone — must NOT sound AI-generated
+   - Only include information provided — do NOT hallucinate any details
+   - Keep it concise — 1 page preferred, maximum 2 pages
+
+2. ATS OPTIMIZATION:
+   - Use standard section headings: Summary, Experience, Skills, Education, Projects
+   - Include keywords from the job description naturally
+   - Avoid tables, columns, headers/footers, images
+
+3. HTML & DESIGN RULES:
+   - Return a COMPLETE, self-contained HTML document with all CSS inline or in style tag
+   - Use a clean, minimal design with ample whitespace
+   - Font: Inter, Roboto, or system-ui
+   - Accent color: one subtle color only
+   - Margins: 15mm on all sides — optimized for A4 PDF
+   - DO NOT use flexbox columns or grid layouts
+   - All content must flow top-to-bottom in a single column
+
+4. STRUCTURE:
+   - Header: Full name, contact info
+   - Professional Summary: 2-3 lines
+   - Technical Skills: grouped by category
+   - Work Experience / Projects: reverse chronological
+   - Education
+
+5. RESPONSE FORMAT:
+   - Return ONLY a valid JSON: { "html": "..." }
+   - No markdown, no explanation outside JSON`
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",          
+            model: "gemini-2.5-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
-                responseSchema: geminiResponseSchema2,  
+                responseSchema: resumePdfSchema,
                 maxOutputTokens: 8192,
                 temperature: 0.2
             }
         })
 
         if (!response || !response.text) {
-            throw new Error("AI returned empty response")
+            throw new Error('AI returned empty response')
         }
 
         const jsonContent = JSON.parse(response.text)
@@ -263,4 +241,4 @@ Requirements:
     }
 }
 
-module.exports = {generateInterviewReport,generateResumePdf}
+module.exports = { generateInterviewReport, generateResumePdf }
