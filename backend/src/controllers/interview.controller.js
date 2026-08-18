@@ -55,31 +55,76 @@ async function generateResumePdfController(req, res) {
     try {
         const { interviewReportId } = req.params
 
-        const interviewReport = await interviewReportModel.findById(interviewReportId)
+        console.log("1. REPORT ID:", interviewReportId)
+        console.log("2. CURRENT USER:", req.user?.id)
+
+        const interviewReport =
+            await interviewReportModel.findById(interviewReportId)
+
+        console.log("3. REPORT FOUND:", !!interviewReport)
 
         if (!interviewReport) {
-            return res.status(404).json({ message: "Interview report not found." })
+            return res.status(404).json({
+                message: "Interview report not found."
+            })
         }
 
-        if (interviewReport.user?.toString() !== req.user.id?.toString()) {
-            return res.status(403).json({ message: "Access denied." })
+        console.log("4. REPORT USER:", interviewReport.user?.toString())
+        console.log("5. REQUEST USER:", req.user.id?.toString())
+
+        if (
+            interviewReport.user?.toString() !==
+            req.user.id?.toString()
+        ) {
+            return res.status(403).json({
+                message: "Access denied."
+            })
         }
 
-        const { resume, jobDescription, selfDescription } = interviewReport
+        const {
+            resume,
+            jobDescription,
+            selfDescription
+        } = interviewReport
 
-        const pdfBuffer = await generateResumePdf({ resume, jobDescription, selfDescription })
+        console.log("6. RESUME EXISTS:", !!resume)
+        console.log("7. RESUME LENGTH:", resume?.length)
+        console.log("8. JOB DESCRIPTION EXISTS:", !!jobDescription)
+        console.log("9. SELF DESCRIPTION EXISTS:", !!selfDescription)
+
+        console.log("10. Calling generateResumePdf...")
+
+        const pdfBuffer = await generateResumePdf({
+            resume,
+            jobDescription,
+            selfDescription
+        })
+
+        console.log("11. PDF GENERATED")
+        console.log("12. PDF BUFFER:", !!pdfBuffer)
+        console.log("13. PDF BUFFER LENGTH:", pdfBuffer?.length)
 
         res.set({
             "Content-Type": "application/pdf",
-            "Content-Disposition": `attachment; filename=resume_${interviewReportId}.pdf`,
+            "Content-Disposition":
+                `attachment; filename=resume_${interviewReportId}.pdf`,
             "Content-Length": pdfBuffer.length
         })
 
         res.send(pdfBuffer)
 
     } catch (error) {
-        console.error("PDF Controller Error:", error.message)
-        res.status(500).json({ message: "Failed to generate PDF resume" })
+
+        console.error("========== PDF ERROR ==========")
+        console.error("MESSAGE:", error.message)
+        console.error("STACK:", error.stack)
+        console.error("FULL ERROR:", error)
+        console.error("================================")
+
+        res.status(500).json({
+            message: "Failed to generate PDF resume",
+            error: error.message
+        })
     }
 }
 
