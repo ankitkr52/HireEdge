@@ -10,6 +10,10 @@ const Home = () => {
     const [jobDescription, setJobDescription] = useState("")
     const [selfDescription, setSelfDescription] = useState("")
     const [fileName, setFileName] = useState("")
+
+      useEffect(() => {
+        getReports()
+    }, [])
     
 
     const navigate = useNavigate()
@@ -52,9 +56,7 @@ const Home = () => {
                 sub="Fetching your previous interview plans..." />
         )
     }
-     useEffect(() => {
-        getReports()
-    }, [])
+   
 
     return (
         <div className='home-page'>
