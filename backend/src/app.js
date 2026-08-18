@@ -8,7 +8,7 @@ const app = express();
  app.use(express.json());
  app.use(cookieParser())
  app.use(cors({
-    origin:"https://hire-edge-delta.vercel.app/login",
+    origin:"https://hire-edge-delta.vercel.app/",
     credentials:true
  }))
 
