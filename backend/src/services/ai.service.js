@@ -149,11 +149,7 @@ REQUIREMENTS:
 
         const result = JSON.parse(response.text)
 
-        console.log("=== RESULT KEYS ===", Object.keys(result))
-        console.log("technicalQuestions:", result.technicalQuestions?.length)
-        console.log("behavioralQuestions:", result.behavioralQuestions?.length)
-        console.log("skillGaps:", result.skillGaps?.length)
-        console.log("preparationPlan:", result.preparationPlan?.length)
+       
 
         return result
 
