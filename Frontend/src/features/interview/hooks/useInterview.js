@@ -1,4 +1,4 @@
-import { useContext } from "react"  // ✅ useParams hatao
+import { useContext } from "react" 
 import {
     generateInterviewReport,
     generateInterviewReportById as getInterviewReportById,
@@ -22,17 +22,17 @@ export const useInterview = () => {
             const response = await generateInterviewReport({ jobDescription, selfDescription, resumeFile })
             const nextReport = response?.interviewReport ?? response?.report ?? null
             setReport(nextReport)
-            return nextReport  // ✅ return yahan — finally ke baad nahi
+            return nextReport  
         } catch (error) {
             console.error(error)
             return null
         } finally {
             setLoading(false)
         }
-        // ❌ return response.interviewReport — ye line hatao
+        
     }
 
-    const getReportById = async (id) => {  // ✅ useParams hataya — id parameter se
+    const getReportById = async (id) => {  
         if (!id) return null
         setLoading(true)
         try {

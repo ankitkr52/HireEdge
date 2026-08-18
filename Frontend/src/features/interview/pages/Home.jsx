@@ -5,18 +5,12 @@ import { useNavigate, useParams } from 'react-router'
 import LoadingScreen from '../../auth/components/LoadingScreen'
 
 const Home = () => {
-    const { loading, generateReport, reports } = useInterview()
+    const { loading, generateReport, reports,getReports } = useInterview()
     const resumeInputRef = useRef()
     const [jobDescription, setJobDescription] = useState("")
     const [selfDescription, setSelfDescription] = useState("")
     const [fileName, setFileName] = useState("")
     
-    const {getReports,}=useInterview()
-    
-
-     useEffect(() => {
-        getReports()
-    }, [])
 
     const navigate = useNavigate()
       const handleGenerateReport = async () => {
@@ -58,6 +52,9 @@ const Home = () => {
                 sub="Fetching your previous interview plans..." />
         )
     }
+     useEffect(() => {
+        getReports()
+    }, [])
 
     return (
         <div className='home-page'>

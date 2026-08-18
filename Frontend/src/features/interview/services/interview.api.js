@@ -19,7 +19,7 @@ export const generateInterviewReport = async ({ resumeFile, selfDescription, job
 
     const response = await api.post('/api/interview', formData, {
         headers:{
-            contentType: 'multipart/form-data'
+            "Content-Type": 'multipart/form-data'
         }
     })
     return response.data
