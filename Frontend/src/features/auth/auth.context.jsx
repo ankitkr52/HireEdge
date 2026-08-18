@@ -1,4 +1,7 @@
 import { createContext, useState ,useEffect} from "react"
+import { login, register, logout, getMe } from "./services/auth.api.js"
+
+// yeha p import krna hai get user details 
 
 
 export const AuthContext = createContext()

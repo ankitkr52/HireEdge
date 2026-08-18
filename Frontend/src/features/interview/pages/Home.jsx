@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState,useEffect } from 'react'
 import "../style/home.scss"
 import { useInterview } from '../hooks/useInterview'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import LoadingScreen from '../../auth/components/LoadingScreen'
 
 const Home = () => {
@@ -10,12 +10,40 @@ const Home = () => {
     const [jobDescription, setJobDescription] = useState("")
     const [selfDescription, setSelfDescription] = useState("")
     const [fileName, setFileName] = useState("")
+    
+    const {getReports,}=useInterview()
+    
+
+     useEffect(() => {
+        getReports()
+    }, [])
 
     const navigate = useNavigate()
-    const handleGenerateReport = async () => {
-        const resumeFile = resumeInputRef.current.files[0]
-        const data = await generateReport({ jobDescription, selfDescription, resumeFile })
-        navigate(`/interview/${data._id}`)
+      const handleGenerateReport = async () => {
+        const resumeFile = resumeInputRef.current?.files[0]
+
+        if (!jobDescription) {
+            alert("Please enter a job description")
+            return
+        }
+
+        if (!resumeFile && !selfDescription) {
+            alert("Please upload a resume or write a self description")
+            return
+        }
+
+        try {
+            const data = await generateReport({ jobDescription, selfDescription, resumeFile })
+
+           
+            if (data?._id) {
+                navigate(`/interview/${data._id}`)
+            } else {
+                alert("Report generation failed. Please try again.")
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Something went wrong")
+        }
     }
 
 

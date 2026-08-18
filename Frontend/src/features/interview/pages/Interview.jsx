@@ -4,6 +4,9 @@ import { useInterview } from '../hooks/useInterview'
 import { useNavigate, useParams } from 'react-router'
 import LoadingScreen from '../../auth/components/LoadingScreen'
 
+
+
+
 const NAV_ITEMS = [
     {
         id: 'technical',
@@ -87,8 +90,8 @@ const RoadMapDay = ({ day }) => (
 // ── Main Component ────────────────────────────────────────────────────────────
 const Interview = () => {
     const [activeNav, setActiveNav] = useState('technical')
-    const { report, getReportById, loading, getResumePdf } = useInterview()
     const { interviewId } = useParams()
+    const { report, getReportById, loading, getResumePdf } = useInterview()
     const navigate = useNavigate()
 
     useEffect(() => {
