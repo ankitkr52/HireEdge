@@ -4,12 +4,12 @@ const interviewReportModel = require('../models/interviewReport.model')
 
 async function generateInterViewReportController(req, res) {
     try {
-        // ✅ File check
+       
         if (!req.file) {
             return res.status(400).json({ message: "Resume PDF required hai" })
         }
 
-        // ✅ Sahi tarika — seedha function call
+        
         const pdfData = await pdfParse(req.file.buffer)
         const resumeText = pdfData.text
 
@@ -103,21 +103,33 @@ async function getInterviewReportByIdController(req, res) {
     try {
         const { interviewReportId } = req.params
 
+        console.log("INTERVIEW REPORT ID:", interviewReportId)
+        console.log("CURRENT USER ID:", req.user.id)
+
         const interviewReport = await interviewReportModel.findOne({
             _id: interviewReportId,
             user: req.user.id
         })
 
+        console.log("FOUND REPORT:", interviewReport)
+
         if (!interviewReport) {
-            return res.status(404).json({ message: "Report not found." })
+            return res.status(404).json({
+                message: "Report not found."
+            })
         }
 
         res.status(200).json({
             message: "Interview report fetched successfully.",
             interviewReport
         })
+
     } catch (error) {
-        res.status(500).json({ message: "Internal server error" })
+        console.error("GET REPORT BY ID ERROR:", error)
+
+        res.status(500).json({
+            message: "Internal server error"
+        })
     }
 }
 
