@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE_URL = 'http://localhost:3000/api/auth'
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api/auth`
 const config = { withCredentials: true }
 
 export async function register({ username, email, password }) {
