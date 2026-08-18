@@ -19,7 +19,7 @@ async function registerUserController(req, res) {
             return res.status(400).json({ message: "Please provide username, email and password" })
         }
 
-    
+
         const isUserAlreadyExist = await userModel.findOne({
             $or: [{ username }, { email }]
         })
@@ -27,7 +27,7 @@ async function registerUserController(req, res) {
             return res.status(400).json({ message: "Account already exists with this username or email" })
         }
 
-      
+
         const hash = await bcrypt.hash(password, 10)
 
         const user = await userModel.create({
@@ -42,7 +42,11 @@ async function registerUserController(req, res) {
             { expiresIn: "1d" }
         )
 
-        res.cookie("token", token, { httpOnly: true })  
+        res.cookie("token", token, {
+            httpOnly: true, secure: true, sameSite: "none",
+            path: "/",
+            maxAge: 24 * 60 * 60 * 1000
+        })
 
         res.status(201).json({
             message: "User registered successfully",
@@ -54,7 +58,7 @@ async function registerUserController(req, res) {
         })
 
     } catch (error) {
-        
+
         res.status(500).json({ message: "Internal server error" })
     }
 }
@@ -67,7 +71,7 @@ async function registerUserController(req, res) {
 
 async function loginUserController(req, res) {
     try {
-        const { email, password } = req.body  
+        const { email, password } = req.body
 
         if (!email || !password) {
             return res.status(400).json({ message: "Please provide email and password" })
@@ -80,7 +84,7 @@ async function loginUserController(req, res) {
 
         const isPasswordValid = await bcrypt.compare(password, user.password)
         if (!isPasswordValid) {
-            return res.status(401).json({ message: "Invalid email or password" })  
+            return res.status(401).json({ message: "Invalid email or password" })
         }
 
         const token = jwt.sign(
@@ -89,7 +93,11 @@ async function loginUserController(req, res) {
             { expiresIn: "1d" }
         )
 
-        res.cookie("token", token, { httpOnly: true })  
+         res.cookie("token", token, {
+            httpOnly: true, secure: true, sameSite: "none",
+            path: "/",
+            maxAge: 24 * 60 * 60 * 1000
+        })
 
         res.status(200).json({
             message: "User logged in successfully.",
@@ -100,7 +108,7 @@ async function loginUserController(req, res) {
             }
         })
     } catch (error) {
-        res.status(500).json({ message: "Internal server error" })  
+        res.status(500).json({ message: "Internal server error" })
     }
 }
 
@@ -115,7 +123,12 @@ async function logoutUserController(req, res) {
     if (token) {
         await tokenBlacklistModel.create({ token })
     }
-    res.clearCookie("token")
+    res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/"
+})
     res.status(200).json({ message: "User logged out successfully" })
 }
 
@@ -130,7 +143,7 @@ async function getMeController(req, res) {
     const user = await userModel.findById(req.user.id)
 
     res.status(200).json({
-        message:"User details fetched successfully",
+        message: "User details fetched successfully",
         user: {
 
             id: user._id,
