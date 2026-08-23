@@ -10,6 +10,9 @@ const blacklistTokenSchema = new mongoose.Schema({
     timestamps: true
 })
 
+blacklistTokenSchema.index({ createdAt: 1 }, { expireAfterSeconds: 86400 });
+blacklistTokenSchema.index({ token: 1 });
+
 const tokenBlacklistModel = mongoose.model("blacklistToken", blacklistTokenSchema)
 
 

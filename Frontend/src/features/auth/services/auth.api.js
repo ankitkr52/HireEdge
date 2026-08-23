@@ -27,10 +27,10 @@ export async function login({ email, password }) {
 
 export async function logout() {
     try {
-        const response = await axios.get(`${BASE_URL}/logout`, config)
+        const response = await axios.post(`${BASE_URL}/logout`, null, config)
         return response.data
     } catch (err) {
-        throw err  
+        throw err
     }
 }
 

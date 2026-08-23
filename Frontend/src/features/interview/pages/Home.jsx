@@ -47,7 +47,23 @@ const Home = () => {
 
     const handleFileChange = (e) => {
         const file = e.target.files[0]
-        if (file) setFileName(file.name)
+        if (!file) return
+
+        if (file.type !== 'application/pdf') {
+            alert("Only PDF files are allowed.")
+            e.target.value = ""
+            setFileName("")
+            return
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert("File too large. Maximum allowed size is 5MB.")
+            e.target.value = ""
+            setFileName("")
+            return
+        }
+
+        setFileName(file.name)
     }
 
     if (loading) {
@@ -167,8 +183,8 @@ const Home = () => {
                                 </svg>
                             </span>
                             <p>
-                                A <strong>resume</strong> or <strong>self-description</strong> is
-                                required alongside the job description.
+                                A <strong>resume (PDF)</strong> is required. <strong>Self-description</strong> is
+                                optional and provides additional context for better results.
                             </p>
                         </div>
                     </div>
