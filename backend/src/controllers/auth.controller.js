@@ -60,7 +60,7 @@ async function registerUserController(req, res) {
         })
 
     } catch (error) {
-
+        console.error("registerUserController error:", error.message)
         res.status(500).json({ message: "Internal server error" })
     }
 }
@@ -112,23 +112,29 @@ async function loginUserController(req, res) {
             }
         })
     } catch (error) {
+        console.error("loginUserController error:", error.message)
         res.status(500).json({ message: "Internal server error" })
     }
 }
 
 /**
- * 
+ *
  * @name logoutUserController
- *@description clear token  from user cookie and add token to blacklist 
+ *@description clear token  from user cookie and add token to blacklist
  @access Public
  */
 async function logoutUserController(req, res) {
-    const token = req.cookies.token
-    if (token) {
-        await tokenBlacklistModel.create({ token })
+    try {
+        const token = req.cookies.token
+        if (token) {
+            await tokenBlacklistModel.create({ token })
+        }
+        res.clearCookie("token")
+        res.status(200).json({ message: "User logged out successfully" })
+    } catch (error) {
+        console.error("logoutUserController error:", error.message)
+        res.status(500).json({ success: false, message: "Internal server error" })
     }
-    res.clearCookie("token")
-    res.status(200).json({ message: "User logged out successfully" })
 }
 
 
@@ -139,18 +145,26 @@ async function logoutUserController(req, res) {
  * @access private
  */
 async function getMeController(req, res) {
-    const user = await userModel.findById(req.user.id)
+    try {
+        const user = await userModel.findById(req.user.id)
 
-    res.status(200).json({
-        message: "User details fetched successfully",
-        user: {
-
-            id: user._id,
-            username: user.username,
-            email: user.email
+        if (!user) {
+            return res.status(401).json({ success: false, message: "User not found. Please login again." })
         }
-    })
 
+        res.status(200).json({
+            message: "User details fetched successfully",
+            user: {
+
+                id: user._id,
+                username: user.username,
+                email: user.email
+            }
+        })
+    } catch (error) {
+        console.error("getMeController error:", error.message)
+        return res.status(500).json({ success: false, message: "Internal server error" })
+    }
 }
 
 module.exports = {
