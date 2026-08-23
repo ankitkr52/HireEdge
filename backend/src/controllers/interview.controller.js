@@ -6,7 +6,7 @@ async function generateInterViewReportController(req, res) {
     try {
        
         if (!req.file) {
-            return res.status(400).json({ message: "Resume PDF required hai" })
+            return res.status(400).json({ message: "Resume PDF is required" })
         }
 
         
@@ -16,7 +16,7 @@ async function generateInterViewReportController(req, res) {
         const { selfDescription, jobDescription } = req.body
 
         if (!jobDescription) {
-            return res.status(400).json({ message: "Job description required hai" })
+            return res.status(400).json({ message: "Job description is required" })
         }
 
         const interViewReportByAi = await generateInterviewReport({
@@ -35,8 +35,7 @@ async function generateInterViewReportController(req, res) {
             technicalQuestions:  interViewReportByAi.technicalQuestions,
             behavioralQuestions: interViewReportByAi.behavioralQuestions,
             skillGaps:           interViewReportByAi.skillGaps,
-            preparationPlan:     interViewReportByAi.preparationPlan,
-            status: "completed"
+            preparationPlan:     interViewReportByAi.preparationPlan
         })
 
         res.status(201).json({

@@ -1,4 +1,4 @@
-const express = require('express');  // Fixed typo
+const express = require('express');
 const cookieParser = require('cookie-parser');
 const cors=require('cors')
 const multer = require('multer');

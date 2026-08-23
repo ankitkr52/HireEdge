@@ -59,8 +59,6 @@ export const useInterview = () => {
     try {
         const response = await getAllInterviewReports()
 
-        console.log("Interview reports response:", response)
-
         const nextReports =
             response?.interviewReports ??
             response?.reports ??
@@ -71,9 +69,7 @@ export const useInterview = () => {
         return nextReports
 
     } catch (error) {
-        console.error("GET INTERVIEW REPORTS ERROR:", error)
-        console.error("STATUS:", error.response?.status)
-        console.error("DATA:", error.response?.data)
+        console.error("Get reports error:", error.message)
         setError(error.response?.data?.message || "Failed to load reports")
 
         return []

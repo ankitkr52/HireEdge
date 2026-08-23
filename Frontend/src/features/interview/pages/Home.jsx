@@ -1,7 +1,7 @@
 import React, { useRef, useState,useEffect } from 'react'
 import "../style/home.scss"
 import { useInterview } from '../hooks/useInterview'
-import { useNavigate, useParams } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 import LoadingScreen from '../../auth/components/LoadingScreen'
 
 const Home = () => {
@@ -30,17 +30,13 @@ const Home = () => {
             return
         }
 
-        try {
-            const data = await generateReport({ jobDescription, selfDescription, resumeFile })
+        const data = await generateReport({ jobDescription, selfDescription, resumeFile })
 
-           
-            if (data?._id) {
-                navigate(`/interview/${data._id}`)
-            } else {
-                alert("Report generation failed. Please try again.")
-            }
-        } catch (err) {
-            alert(err.response?.data?.message || "Something went wrong")
+
+        if (data?._id) {
+            navigate(`/interview/${data._id}`)
+        } else {
+            alert("Report generation failed. Please try again.")
         }
     }
 

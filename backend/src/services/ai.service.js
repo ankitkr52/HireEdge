@@ -115,8 +115,6 @@ async function generatePdfFromHtml(htmlContent) {
 // ── Interview Report Generator ────────────────────────────────────────────────
 async function generateInterviewReport({ resume, selfDescription, jobDescription }) {
     try {
-        console.log("=== AI SERVICE CALLED ===")
-
         const prompt = `You are an expert interview preparation assistant.
 Analyze the candidate profile against the job description and generate a complete interview report.
 
@@ -225,8 +223,6 @@ STRICT REQUIREMENTS:
         if (!jsonContent.html) {
             throw new Error("AI did not return HTML content")
         }
-
-        console.log("HTML generated — length:", jsonContent.html.length)
 
         const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
         return pdfBuffer
