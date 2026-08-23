@@ -14,26 +14,29 @@ export const useInterview = () => {
         throw new Error("useInterview must be used within an InterviewProvider")
     }
 
-    const { loading, setLoading, report, setReport, reports, setReports } = context
+    const { loading, setLoading, report, setReport, reports, setReports, error, setError } = context
 
     const generateReport = async ({ resumeFile, selfDescription, jobDescription }) => {
+        setError(null)
         setLoading(true)
         try {
             const response = await generateInterviewReport({ jobDescription, selfDescription, resumeFile })
             const nextReport = response?.interviewReport ?? response?.report ?? null
             setReport(nextReport)
-            return nextReport  
+            return nextReport
         } catch (error) {
             console.error(error)
+            setError(error.response?.data?.message || "Failed to generate report")
             return null
         } finally {
             setLoading(false)
         }
-        
+
     }
 
-    const getReportById = async (id) => {  
+    const getReportById = async (id) => {
         if (!id) return null
+        setError(null)
         setLoading(true)
         try {
             const response = await getInterviewReportById(id)
@@ -42,6 +45,7 @@ export const useInterview = () => {
             return nextReport
         } catch (error) {
             console.error(error)
+            setError(error.response?.data?.message || "Failed to load report")
             return null
         } finally {
             setLoading(false)
@@ -49,6 +53,7 @@ export const useInterview = () => {
     }
 
     const getReports = async () => {
+    setError(null)
     setLoading(true)
 
     try {
@@ -69,6 +74,7 @@ export const useInterview = () => {
         console.error("GET INTERVIEW REPORTS ERROR:", error)
         console.error("STATUS:", error.response?.status)
         console.error("DATA:", error.response?.data)
+        setError(error.response?.data?.message || "Failed to load reports")
 
         return []
     } finally {
@@ -77,6 +83,7 @@ export const useInterview = () => {
 }
 
     const getResumePdf = async (interviewReportId) => {
+        setError(null)
         setLoading(true)
         try {
             const response = await generateResumePdf({ interviewReportId })
@@ -89,6 +96,7 @@ export const useInterview = () => {
             document.body.removeChild(link)  // ✅ cleanup
         } catch (error) {
             console.error(error)
+            setError(error.response?.data?.message || "Failed to download resume PDF")
         } finally {
             setLoading(false)
         }
@@ -97,5 +105,5 @@ export const useInterview = () => {
     // ✅ useEffect HATAO — component mein rakho
     // return mein sirf functions aur state
 
-    return { loading, report, reports, generateReport, getReportById, getReports, getResumePdf }
+    return { loading, error, report, reports, generateReport, getReportById, getReports, getResumePdf }
 }

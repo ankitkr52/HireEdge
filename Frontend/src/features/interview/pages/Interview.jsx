@@ -91,17 +91,37 @@ const RoadMapDay = ({ day }) => (
 const Interview = () => {
     const [activeNav, setActiveNav] = useState('technical')
     const { interviewId } = useParams()
-    const { report, getReportById, loading, getResumePdf } = useInterview()
+    const { report, getReportById, loading, getResumePdf, error } = useInterview()
     const navigate = useNavigate()
 
     useEffect(() => {
         if (interviewId) getReportById(interviewId)
     }, [interviewId])
 
-    if (loading || !report) {
+    if (loading) {
         return (
             <LoadingScreen message="Loading your interview plan"
                 sub="Fetching your personalized report..." />
+        )
+    }
+
+    if (error || !report) {
+        return (
+            <div className="interview-page" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                    <h2 style={{ marginBottom: '1rem', color: '#ef4444' }}>Something went wrong</h2>
+                    <p style={{ marginBottom: '1.5rem', color: '#6b7280' }}>
+                        {error || "Report not found or could not be loaded."}
+                    </p>
+                    <button
+                        className='back-btn'
+                        onClick={() => navigate('/')}
+                        style={{ padding: '0.5rem 1.5rem', cursor: 'pointer' }}
+                    >
+                        ← Back to Home
+                    </button>
+                </div>
+            </div>
         )
     }
 
