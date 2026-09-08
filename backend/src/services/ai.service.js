@@ -1,7 +1,8 @@
 const { GoogleGenAI } = require("@google/genai")
 const { z } = require("zod")
 const { zodToJsonSchema } = require("zod-to-json-schema")
-const puppeteer = require('puppeteer')
+const puppeteer = require('puppeteer-core')
+const chromium = require('@sparticuz/chromium')
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
@@ -83,14 +84,25 @@ const resumePdfSchema = {
 async function generatePdfFromHtml(htmlContent) {
     let browser = null
     try {
-        browser = await puppeteer.launch({
-            headless: true,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage'
-            ]
-        })
+        const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
+
+        browser = await puppeteer.launch(
+            isProduction
+                ? {
+                    args: chromium.args,
+                    defaultViewport: chromium.defaultViewport,
+                    executablePath: await chromium.executablePath(),
+                    headless: chromium.headless,
+                }
+                : {
+                    headless: 'new',
+                    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                    // For local dev: uses whatever puppeteer-core can find, OR user's local Chrome
+                    // If local dev breaks after this change, user can install regular puppeteer as devDep
+                    // and set executablePath via env var CHROME_PATH
+                    executablePath: process.env.CHROME_PATH || undefined,
+                }
+        )
         const page = await browser.newPage()
         await page.setContent(htmlContent, { waitUntil: "networkidle0" })
         const pdfBuffer = await page.pdf({

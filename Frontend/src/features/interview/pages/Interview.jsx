@@ -91,7 +91,7 @@ const RoadMapDay = ({ day }) => (
 const Interview = () => {
     const [activeNav, setActiveNav] = useState('technical')
     const { interviewId } = useParams()
-    const { report, getReportById, loading, getResumePdf, error } = useInterview()
+    const { report, getReportById, loading, getResumePdf, error, pdfError } = useInterview()
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -200,6 +200,11 @@ const Interview = () => {
                             </svg>
                             Download resume
                         </button>
+                        {pdfError && (
+                            <p style={{ color: '#ef4444', fontSize: '0.75rem', marginTop: '0.5rem', textAlign: 'center' }}>
+                                {pdfError}
+                            </p>
+                        )}
                     </div>
                 </nav>
 

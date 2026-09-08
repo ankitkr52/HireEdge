@@ -14,7 +14,7 @@ export const useInterview = () => {
         throw new Error("useInterview must be used within an InterviewProvider")
     }
 
-    const { loading, setLoading, report, setReport, reports, setReports, error, setError } = context
+    const { loading, setLoading, report, setReport, reports, setReports, error, setError, pdfError, setPdfError } = context
 
     const generateReport = async ({ resumeFile, selfDescription, jobDescription }) => {
         setError(null)
@@ -79,7 +79,7 @@ export const useInterview = () => {
 }
 
     const getResumePdf = async (interviewReportId) => {
-        setError(null)
+        setPdfError(null)
         setLoading(true)
         try {
             const response = await generateResumePdf({ interviewReportId })
@@ -89,11 +89,11 @@ export const useInterview = () => {
             link.setAttribute("download", `resume_${interviewReportId}.pdf`)
             document.body.appendChild(link)
             link.click()
-            document.body.removeChild(link)  
+            document.body.removeChild(link)
             setTimeout(() => window.URL.revokeObjectURL(url), 100);
         } catch (error) {
             console.error(error)
-            setError(error.response?.data?.message || "Failed to download resume PDF")
+            setPdfError(error.response?.data?.message || "Failed to download resume PDF")
         } finally {
             setLoading(false)
         }
@@ -102,5 +102,5 @@ export const useInterview = () => {
     // ✅ useEffect HATAO — component mein rakho
     // return mein sirf functions aur state
 
-    return { loading, error, report, reports, generateReport, getReportById, getReports, getResumePdf }
+    return { loading, error, pdfError, report, reports, generateReport, getReportById, getReports, getResumePdf }
 }
