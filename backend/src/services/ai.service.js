@@ -3,10 +3,8 @@ const { z } = require("zod")
 const { zodToJsonSchema } = require("zod-to-json-schema")
 const path = require('path')
 const puppeteer = require('puppeteer-core')
-const chromiumModule = require('@sparticuz/chromium')
-// @sparticuz/chromium@149 ships as pure ESM ("type": "module"); Node's require(esm) interop
-// wraps the real API under .default instead of exposing it at the top level like v121 did
-const chromium = chromiumModule.default || chromiumModule
+// @sparticuz/chromium@149 is pure ESM; Vercel's bundler cannot statically require() it,
+// so it is loaded via dynamic import() lazily inside generatePdfFromHtml's production branch
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
@@ -119,6 +117,9 @@ async function generatePdfFromHtml(htmlContent) {
         const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
 
         if (isProduction) {
+            const chromiumModule = await import('@sparticuz/chromium')
+            const chromium = chromiumModule.default || chromiumModule
+
             if (typeof chromium.setGraphicsMode === 'function') {
                 chromium.setGraphicsMode(false)
             } else {
