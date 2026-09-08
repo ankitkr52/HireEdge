@@ -123,15 +123,18 @@ async function generatePdfFromHtml(htmlContent) {
                 chromium.setGraphicsMode(false)
             } else {
                 // @sparticuz/chromium v149 exposes setGraphicsMode as a static setter, not a method
-                chromium.setGraphicsMode = false
+                try { chromium.setGraphicsMode = false } catch (e) { /* setter-only property; ignore */ }
             }
 
             const executablePath = await chromium.executablePath()
             const execDir = path.dirname(executablePath)
 
-            // CRITICAL: tells the Linux dynamic linker where to find Chromium's shared libraries
-            // (this is the missing piece that causes the libnss3.so error)
-            process.env.LD_LIBRARY_PATH = execDir + (process.env.LD_LIBRARY_PATH ? ':' + process.env.LD_LIBRARY_PATH : '')
+            // Build the LD_LIBRARY_PATH value — put Chromium's exec dir FIRST so its bundled libs win,
+            // then preserve any system paths that may already be present
+            const ldLibraryPath = execDir + (process.env.LD_LIBRARY_PATH ? ':' + process.env.LD_LIBRARY_PATH : '')
+
+            // Also set on process.env as a belt-and-suspenders fallback
+            process.env.LD_LIBRARY_PATH = ldLibraryPath
 
             browser = await puppeteer.launch({
                 args: chromium.args,
@@ -139,6 +142,12 @@ async function generatePdfFromHtml(htmlContent) {
                 // the bundled binary is headless-only, so headless: true is the direct equivalent
                 headless: true,
                 executablePath,
+                // CRITICAL: pass env explicitly so LD_LIBRARY_PATH is guaranteed to reach the child process.
+                // Merging with process.env preserves everything else the browser might need.
+                env: {
+                    ...process.env,
+                    LD_LIBRARY_PATH: ldLibraryPath,
+                },
             })
         } else {
             browser = await puppeteer.launch({
