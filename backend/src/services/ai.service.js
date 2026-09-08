@@ -1,8 +1,12 @@
 const { GoogleGenAI } = require("@google/genai")
 const { z } = require("zod")
 const { zodToJsonSchema } = require("zod-to-json-schema")
+const path = require('path')
 const puppeteer = require('puppeteer-core')
-const chromium = require('@sparticuz/chromium')
+const chromiumModule = require('@sparticuz/chromium')
+// @sparticuz/chromium@149 ships as pure ESM ("type": "module"); Node's require(esm) interop
+// wraps the real API under .default instead of exposing it at the top level like v121 did
+const chromium = chromiumModule.default || chromiumModule
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
@@ -114,23 +118,38 @@ async function generatePdfFromHtml(htmlContent) {
     try {
         const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
 
-        browser = await puppeteer.launch(
-            isProduction
-                ? {
-                    args: chromium.args,
-                    defaultViewport: chromium.defaultViewport,
-                    executablePath: await chromium.executablePath(),
-                    headless: chromium.headless,
-                }
-                : {
-                    headless: 'new',
-                    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                    // For local dev: uses whatever puppeteer-core can find, OR user's local Chrome
-                    // If local dev breaks after this change, user can install regular puppeteer as devDep
-                    // and set executablePath via env var CHROME_PATH
-                    executablePath: process.env.CHROME_PATH || undefined,
-                }
-        )
+        if (isProduction) {
+            if (typeof chromium.setGraphicsMode === 'function') {
+                chromium.setGraphicsMode(false)
+            } else {
+                // @sparticuz/chromium v149 exposes setGraphicsMode as a static setter, not a method
+                chromium.setGraphicsMode = false
+            }
+
+            const executablePath = await chromium.executablePath()
+            const execDir = path.dirname(executablePath)
+
+            // CRITICAL: tells the Linux dynamic linker where to find Chromium's shared libraries
+            // (this is the missing piece that causes the libnss3.so error)
+            process.env.LD_LIBRARY_PATH = execDir + (process.env.LD_LIBRARY_PATH ? ':' + process.env.LD_LIBRARY_PATH : '')
+
+            browser = await puppeteer.launch({
+                args: chromium.args,
+                // defaultViewport/headless were removed from @sparticuz/chromium's API in v149;
+                // the bundled binary is headless-only, so headless: true is the direct equivalent
+                headless: true,
+                executablePath,
+            })
+        } else {
+            browser = await puppeteer.launch({
+                headless: 'new',
+                args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                // For local dev: uses whatever puppeteer-core can find, OR user's local Chrome
+                // If local dev breaks after this change, user can install regular puppeteer as devDep
+                // and set executablePath via env var CHROME_PATH
+                executablePath: process.env.CHROME_PATH || undefined,
+            })
+        }
         const page = await browser.newPage()
         await page.setContent(htmlContent, { waitUntil: "networkidle0" })
         const pdfBuffer = await page.pdf({
