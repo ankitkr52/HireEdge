@@ -2,6 +2,8 @@ const { Router } = require("express");
 const userModel = require("../models/usermodels")
 const authController = require("../controllers/auth.controller")
 const authMiddleware = require("../middleWare/auth.middleware")
+const validate = require("../middleWare/validate.middleware");
+const { registerSchema, loginSchema } = require("../validators/auth.validator");
 
 
 const authRouter = Router();
@@ -10,14 +12,14 @@ const authRouter = Router();
  * @description register a new user
  *  @access Public
  */
-authRouter.post("/register", authController.registerUserController);
+authRouter.post("/register", validate(registerSchema), authController.registerUserController);
 
 /**
  * @name POST/api/auth/login
  * @description login user with email and password
  * @access public
  */
-authRouter.post("/login", authController.loginUserController)
+authRouter.post("/login", validate(loginSchema), authController.loginUserController)
 
 /**
  * @name POST/api/auth/logout

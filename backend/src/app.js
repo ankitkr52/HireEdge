@@ -11,9 +11,19 @@ const app = express();
  app.use(helmet());
  app.use(express.json());
  app.use(cookieParser())
+ const allowedOrigins = (process.env.CORS_ORIGINS || "https://hire-edge-delta.vercel.app,http://localhost:5173")
+    .split(",")
+    .map(o => o.trim());
+
  app.use(cors({
-    origin:"https://hire-edge-delta.vercel.app",
-    credentials:true
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true
  }))
 
 // require all the routes here

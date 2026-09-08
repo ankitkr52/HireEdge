@@ -15,10 +15,6 @@ async function generateInterViewReportController(req, res) {
 
         const { selfDescription, jobDescription } = req.body
 
-        if (!jobDescription) {
-            return res.status(400).json({ message: "Job description is required" })
-        }
-
         const interViewReportByAi = await generateInterviewReport({
             resume: resumeText,
             selfDescription: selfDescription || "",

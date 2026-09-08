@@ -2,6 +2,8 @@ const express = require("express")
 const authMiddleware = require('../middleWare/auth.middleware')
 const interviewController = require('../controllers/interview.controller')
 const upload = require('../middleWare/file.middleware')
+const validate = require("../middleWare/validate.middleware");
+const { createInterviewSchema } = require("../validators/interview.validator");
 
 
 const interviewRouter  = express.Router()
@@ -12,7 +14,7 @@ const interviewRouter  = express.Router()
  * @access private
  */
 
-interviewRouter.post("/", authMiddleware, upload.single("resume"), interviewController.generateInterViewReportController)
+interviewRouter.post("/", authMiddleware, upload.single("resume"), validate(createInterviewSchema), interviewController.generateInterViewReportController)
 
 /**
  * @routes get/api/interview/report/:interviewReportId

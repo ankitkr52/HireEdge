@@ -3,6 +3,8 @@ const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const tokenBlacklistModel = require("../models/blacklist.model")
 
+const isProduction = process.env.NODE_ENV === "production";
+
 
 /**
  * @name registerUserController
@@ -14,11 +16,6 @@ const tokenBlacklistModel = require("../models/blacklist.model")
 async function registerUserController(req, res) {
     try {
         const { username, email, password } = req.body
-
-        if (!username || !email || !password) {
-            return res.status(400).json({ message: "Please provide username, email and password" })
-        }
-
 
         const isUserAlreadyExist = await userModel.findOne({
             $or: [{ username }, { email }]
@@ -44,8 +41,8 @@ async function registerUserController(req, res) {
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: true,
-            sameSite: "none",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
             path: "/",
             maxAge: 24 * 60 * 60 * 1000
         })
@@ -75,10 +72,6 @@ async function loginUserController(req, res) {
     try {
         const { email, password } = req.body
 
-        if (!email || !password) {
-            return res.status(400).json({ message: "Please provide email and password" })
-        }
-
         const user = await userModel.findOne({ email })
         if (!user) {
             return res.status(401).json({ message: "Invalid email or password" })
@@ -97,8 +90,8 @@ async function loginUserController(req, res) {
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: true,
-            sameSite: "none",
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
             path: "/",
             maxAge: 24 * 60 * 60 * 1000
         })
