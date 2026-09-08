@@ -10,6 +10,22 @@ const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
 })
 
+const PDF_PAGE_WIDTH_MM = 210
+const PDF_PAGE_HEIGHT_MM = 297
+const PDF_MARGIN_MM = 12
+const MM_TO_PX = 96 / 25.4
+const PDF_MIN_SCALE = 0.65
+
+function applyFontOverride(html) {
+    const fontLinks = '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">'
+    const fontOverride = `<style>*, *::before, *::after { font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important; } body { margin: 0 !important; padding: 0 !important; }</style>`
+
+    if (html.includes('</head>')) {
+        return html.replace('</head>', `${fontLinks}${fontOverride}</head>`)
+    }
+    return fontLinks + fontOverride + html
+}
+
 async function callGeminiWithRetry(fn, { maxAttempts = 3, baseDelayMs = 1000 } = {}) {
     let lastError;
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -161,16 +177,39 @@ async function generatePdfFromHtml(htmlContent) {
             })
         }
         const page = await browser.newPage()
+
+        // Set viewport to match the actual printable content width, so text wraps
+        // the same way it will when printed — otherwise height measurement is inaccurate.
+        const contentWidthPx = Math.round((PDF_PAGE_WIDTH_MM - PDF_MARGIN_MM * 2) * MM_TO_PX)
+        await page.setViewport({ width: contentWidthPx, height: 1600 })
+
         await page.setContent(htmlContent, { waitUntil: "networkidle0" })
+
+        // Wait for any web fonts (e.g. Google Fonts from applyFontOverride) to finish loading
+        // before measuring — otherwise measurement may use fallback font metrics.
+        await page.evaluate(() => document.fonts.ready)
+
+        // Measure actual rendered content height at scale 1
+        const contentHeightPx = await page.evaluate(() => document.documentElement.scrollHeight)
+
+        const usablePageHeightPx = (PDF_PAGE_HEIGHT_MM - PDF_MARGIN_MM * 2) * MM_TO_PX
+
+        let pdfScale = 1
+        if (contentHeightPx > usablePageHeightPx) {
+            pdfScale = usablePageHeightPx / contentHeightPx
+            pdfScale = Math.max(pdfScale, PDF_MIN_SCALE)
+        }
+
         const pdfBuffer = await page.pdf({
             format: "A4",
             printBackground: true,
             margin: {
-                top:    "20mm",
-                bottom: "20mm",
-                left:   "15mm",
-                right:  "15mm"
-            }
+                top:    `${PDF_MARGIN_MM}mm`,
+                bottom: `${PDF_MARGIN_MM}mm`,
+                left:   `${PDF_MARGIN_MM}mm`,
+                right:  `${PDF_MARGIN_MM}mm`
+            },
+            scale: pdfScale
         })
         return pdfBuffer
     } catch (error) {
@@ -257,9 +296,9 @@ STRICT REQUIREMENTS:
 3. HTML & DESIGN RULES:
    - Return a COMPLETE, self-contained HTML document with all CSS inline or in style tag
    - Use a clean, minimal design with ample whitespace
-   - Font: Inter, Roboto, or system-ui
+   - Font: Do not worry about font-family — it will be overridden automatically. Focus on font-size hierarchy (e.g. name larger, section headers medium, body text smaller) and font-weight for emphasis.
    - Accent color: one subtle color only
-   - Margins: 15mm on all sides — optimized for A4 PDF
+   - Margins: Do NOT add outer page margin or padding on the body/container — the PDF renderer applies physical page margins automatically. Set body margin: 0 and padding: 0. Use internal spacing (8-16px gaps) between sections instead.
    - DO NOT use flexbox columns or grid layouts
    - All content must flow top-to-bottom in a single column
 
@@ -297,7 +336,9 @@ STRICT REQUIREMENTS:
             throw new Error("AI did not return HTML content")
         }
 
-        const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
+        const finalHtml = applyFontOverride(jsonContent.html)
+
+        const pdfBuffer = await generatePdfFromHtml(finalHtml)
         return pdfBuffer
 
     } catch (error) {
