@@ -8,6 +8,34 @@ const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GENAI_API_KEY
 })
 
+async function callGeminiWithRetry(fn, { maxAttempts = 3, baseDelayMs = 1000 } = {}) {
+    let lastError;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+            return await fn();
+        } catch (error) {
+            lastError = error;
+            const status = error?.status || error?.code || error?.response?.status;
+            const isRetryable = status === 503 || status === 429 || status === 'UNAVAILABLE' || status === 'RESOURCE_EXHAUSTED';
+
+            console.error(`Gemini call attempt ${attempt}/${maxAttempts} failed:`, {
+                status,
+                code: error?.code,
+                message: error?.message,
+                details: error?.details
+            });
+
+            if (!isRetryable || attempt === maxAttempts) {
+                throw error;
+            }
+
+            const delay = baseDelayMs * Math.pow(2, attempt - 1);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+    throw lastError;
+}
+
 // ── Interview Report Schema ───────────────────────────────────────────────────
 const geminiResponseSchema = {
     type: "object",
@@ -142,16 +170,18 @@ REQUIREMENTS:
 - Do NOT return empty arrays
 - Return ONLY valid JSON`
 
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: geminiResponseSchema,
-                maxOutputTokens: 8192,
-                temperature: 0.2
-            }
-        })
+        const response = await callGeminiWithRetry(() =>
+            ai.models.generateContent({
+                model: "gemini-2.5-flash",
+                contents: prompt,
+                config: {
+                    responseMimeType: "application/json",
+                    responseSchema: geminiResponseSchema,
+                    maxOutputTokens: 8192,
+                    temperature: 0.2
+                }
+            })
+        )
 
         if (!response || !response.text) {
             throw new Error('AI returned empty result')
@@ -215,16 +245,18 @@ STRICT REQUIREMENTS:
    - Return ONLY a valid JSON: { "html": "..." }
    - No markdown, no explanation outside JSON`
 
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: resumePdfSchema,
-                maxOutputTokens: 8192,
-                temperature: 0.2
-            }
-        })
+        const response = await callGeminiWithRetry(() =>
+            ai.models.generateContent({
+                model: "gemini-2.5-flash",
+                contents: prompt,
+                config: {
+                    responseMimeType: "application/json",
+                    responseSchema: resumePdfSchema,
+                    maxOutputTokens: 8192,
+                    temperature: 0.2
+                }
+            })
+        )
 
         if (!response || !response.text) {
             throw new Error('AI returned empty response')

@@ -41,7 +41,11 @@ async function generateInterViewReportController(req, res) {
         })
 
     } catch (error) {
-        console.error("Controller Error:", error.message)
+        console.error("Controller Error:", {
+            message: error?.message,
+            status: error?.status || error?.code,
+            details: error?.details
+        })
         res.status(500).json({ message: "Internal server error" })
     }
 }
@@ -91,7 +95,11 @@ async function generateResumePdfController(req, res) {
 
     } catch (error) {
 
-        console.error("PDF generation error:", error.message)
+        console.error("generateResumePdfController error:", {
+            message: error?.message,
+            status: error?.status || error?.code,
+            details: error?.details
+        })
 
         res.status(500).json({
             message: "Failed to generate PDF resume"
